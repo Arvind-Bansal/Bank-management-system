@@ -13,7 +13,10 @@ class Bank:
         if Path(database).is_file(): #checking if the json file exists or not
             
             with open(database,'r') as file: #opening the json file in read mode
-                data=json.load(file) #loading the data from the json file and storing it in the data variable
+                loaded_data=json.load(file) #loading the data from the json file and storing it in the data variable
+                if loaded_data:  # Only update if data is not empty
+                    Bank.data = loaded_data
+                    print(f"DEBUG: Loaded {len(Bank.data)} accounts from data.json")
     except Exception as err:
         print(f"Error occurred: {err}")
 
@@ -61,15 +64,40 @@ class Bank:
         pin=int(input("enter your pin: "))
         amount=int(input("enter the amount you want to deposit: "))
 
-        for i in Bank.data:
-            if i["account_number"] == account_number and i["pin"] == pin:
-                i["balance"] += amount
-                print(f"your new balance is: {i['balance']}")
-                Bank.update()
-                break
-        else:
+        userdata=[i for i in Bank.data if str(i["account_number"]) == account_number and i["pin"] == pin] #checking if the account number and pin matches with the data in the json file
+        
+        if not userdata:
             print("invalid account number or pin")
+        else:
+            if amount<=0 or amount>200000:
+                print("invalid amount")
+            
+            else:
+                userdata[0]['balance']+=amount #adding the amount to the balance
+                Bank.update() #updating the json file with the new balance
+                print("amount deposited successfully")
 
+
+    def withdraw_money(self):
+        account_number=input("enter your account number: ")
+        pin=int(input("enter your pin: "))
+        amount=int(input("enter the amount you want to withdraw: "))
+
+        userdata=[i for i in Bank.data if str(i["account_number"]) == account_number and i["pin"] == pin] #checking if the account number and pin matches with the data in the json file
+        
+        if not userdata:
+            print("invalid account number or pin")
+        else:
+            if userdata[0]['balance']<amount:
+                print("invalid amount")
+            
+            else:
+                userdata[0]['balance']-=amount #subtracting the amount from the balance
+                Bank.update() #updating the json file with the new balance
+                print("amount withdrawn successfully")
+
+
+        
 print("press 1 for creating an account")                  #{first step
 print("press 2 for deposit money in the bank")            #      |
 print("press 3 for withdraw money from the bank")         #      |
@@ -85,3 +113,6 @@ if check==1:
     user.create_account()
 elif check==2:
     user.deposit_money() 
+
+elif check==3:
+    user.withdraw_money()

@@ -9,16 +9,17 @@ class Bank:
     data=[] #creating a list of dummy data to store the details of the account
     database='data.json'
 
-    try:
-        if Path(database).is_file(): #checking if the json file exists or not
-            
-            with open(database,'r') as file: #opening the json file in read mode
-                loaded_data=json.load(file) #loading the data from the json file and storing it in the data variable
-                if loaded_data:  # Only update if data is not empty
-                    Bank.data = loaded_data
-                    print(f"DEBUG: Loaded {len(Bank.data)} accounts from data.json")
-    except Exception as err:
-        print(f"Error occurred: {err}")
+    def __init__(self):
+        # Load data from file when Bank object is created
+        try:
+            if Path(self.database).is_file():
+                with open(self.database,'r') as file:
+                    loaded_data = json.load(file)
+                    if loaded_data and not Bank.data:  # Only load if Bank.data is still empty
+                        Bank.data = loaded_data
+                        print(f"DEBUG: Loaded {len(Bank.data)} accounts from data.json")
+        except Exception as err:
+            print(f"Error occurred: {err}")
 
     @classmethod
     def update(cls):   #THIS FUNCTION IS USED TO UPDATE THE DATA IN THE JSON FILE
@@ -64,7 +65,12 @@ class Bank:
         pin=int(input("enter your pin: "))
         amount=int(input("enter the amount you want to deposit: "))
 
-        userdata=[i for i in Bank.data if str(i["account_number"]) == account_number and i["pin"] == pin] #checking if the account number and pin matches with the data in the json file
+        print(f"DEBUG: Bank.data = {Bank.data}")  # Show what accounts exist
+        print(f"DEBUG: Looking for account_number='{account_number}', pin={pin}")
+        
+        userdata=[i for i in Bank.data if str(i["account_number"]) == account_number and i["pin"] == pin]
+        
+        print(f"DEBUG: Found {len(userdata)} matching accounts")  # Show if match was found
         
         if not userdata:
             print("invalid account number or pin")
